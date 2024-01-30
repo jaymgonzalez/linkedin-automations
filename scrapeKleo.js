@@ -77,7 +77,7 @@
   })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `${name.replace(' ', '-')}.json`
+  a.download = `${name.replaceAll(' ', '-')}.json`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
