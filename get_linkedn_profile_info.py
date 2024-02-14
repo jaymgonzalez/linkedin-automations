@@ -34,9 +34,22 @@ class LinkedInProfile(BaseModel):
     location: str
     industry: str
     education: List[str]
-    experience: List[Experience] = Field(max_items=3)
+    experience: List[Experience]
     activities: List[Activity]
     followers: int
+
+
+class ConnectionRequestMessage(BaseModel):
+    """Represents a LinkedIn connection request. Tone should be approachable and friendly."""
+
+    intro: str = Field(description="Hey {name} 👋")
+    first_sentence: str = Field(
+        description="Love your {activity}.",
+    )
+    second_sentence: str = Field(
+        description="I'm also {activity}.",
+    )
+    closer: str = Field(description="Would love to connect!")
 
 
 dotenv.load_dotenv()
@@ -163,6 +176,7 @@ def remove_links_and_specific_key(d, target_key="peopleAlsoViewed"):
 
 
 def append_item_to_row(df, item, id, column_id, column_name):
+    df = create_columns(df, [column_name])
     index = df[df[column_id] == id].index
     if not index.empty:
         df.at[index[0], column_name] = item
@@ -179,6 +193,34 @@ def synthesize_profile(profile):
                 {
                     "role": "system",
                     "content": "Given a JSON representation of a LinkedIn profile, extract and synthesize the most relevant information to be used in crafting a personalized connection request message\nhighlighting the information that could make a connection request more personalized and engaging\nmake sure to add the recent posts if any in activities\ndo not include http links",
+                },
+                {
+                    "role": "user",
+                    "content": f"###profile### \n\n {profile} \n\n ###profile###",
+                },
+            ],
+        )
+        print(response)
+        return response.model_dump_json(indent=2)
+
+    except Exception as e:
+        print(e)
+        return None
+
+
+def create_connection_request_message(profile):
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            response_model=ConnectionRequestMessage,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "you are an expert in crafting personalized connection request messages\nplease create a personalized connection request message using the given profile\nuse data from the sender to personalize the message\n keep the message short and engaging\n include relevant topics only",
+                },
+                {
+                    "role": "user",
+                    "content": "###sender### \n\n technical freelancer building linkedin brands for other freelancers talking about business and personal development. have worked as a devops engineer and solutions engineer \n\n ###sender###",
                 },
                 {
                     "role": "user",
@@ -216,7 +258,7 @@ def update_csv_with_rid(csv_name, column_name="linkedinUrl"):
     df.to_csv(csv_name, index=False)
 
 
-def update_csv_with_profile(csv_name, column_name="rid"):
+def update_csv_with_profile(csv_name, column_name="rid", create_message=True):
     df = pd.read_csv(csv_name)
 
     ids = get_ids(df, column_name)
@@ -236,8 +278,35 @@ def update_csv_with_profile(csv_name, column_name="rid"):
 
         profile = json.dumps(profile)
 
+        # if (
+        #     check_if_exists(df[df[column_name] == id].index, df, "synthesizedProfile")
+        #     and create_message is False
+        # ):
+        #     continue
+
+        # elif (
+        #     check_if_exists(df[df[column_name] == id].index, df, "synthesizedProfile")
+        #     and create_message is True
+        # ):
+        #     df = append_item_to_row(
+        #         df,
+        #         create_connection_request_message(profile),
+        #         id,
+        #         column_name,
+        #         "connectionRequestMessage",
+        #     )
+        #     continue
+
+        # else:
         df = append_item_to_row(
             df, synthesize_profile(profile), id, column_name, "synthesizedProfile"
+        )
+        df = append_item_to_row(
+            df,
+            create_connection_request_message(profile),
+            id,
+            column_name,
+            "connectionRequestMessage",
         )
 
     df.to_csv(csv_name, index=False)
@@ -246,3 +315,5 @@ def update_csv_with_profile(csv_name, column_name="rid"):
 if __name__ == "__main__":
     # update_csv_with_rid("freelanceSpain.csv")
     update_csv_with_profile("freelanceSpain.csv")
+
+    # set_profile_rid("https://www.linkedin.com/in/jay-m-gonzalez/")
