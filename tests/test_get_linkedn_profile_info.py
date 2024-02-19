@@ -1,5 +1,5 @@
 import pandas as pd
-from get_linkedn_profile_info import check_if_exists
+from main import check_if_exists
 
 # Test case 1: column_name exists in df.columns and value is not NaN
 df1 = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
