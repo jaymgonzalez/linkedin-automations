@@ -42,7 +42,7 @@ class LinkedInProfile(BaseModel):
 class ConnectionRequestMessage(BaseModel):
     """Represents a LinkedIn connection request. Tone should be approachable and friendly."""
 
-    intro: str = Field(description="Hey {name} 👋")
+    intro: str = Field(description="Hey {first name} 👋")
     first_sentence: str = Field(
         description="Love your {activity}.",
     )
@@ -93,9 +93,10 @@ def set_profile_rid(url):
         ("token", token),
         ("scraper", "linkedin-profile"),
         ("callback", "true"),
-        ("crawler", "LinkedInProfileCrawler"),
         ("url", url),
         ("format", "json"),
+        ("crawler", "LinkedInProfileCrawler"),
+        # ("autoparse", "true"),
     )
 
     try:
@@ -141,14 +142,30 @@ def get_profile_json(id):
         return None
 
     except Exception as e:
-        print(f"There was an issue with the request: {e}")
-        print(id, response.text)
+        if response.json()["error"] == "Not Found":
+            print(f"The profile with id {id} was not found")
+            return None
+        else:
+            print(f"There was an issue with the request: {e}")
+            print(id, response.text)
 
-        return None
+            return None
 
 
 def check_if_exists(index, df, column_name):
-    return pd.notna(df.at[index[0], column_name])
+    try:
+        if column_name in df.columns:
+            return pd.notna(df.at[index, column_name])
+        else:
+            raise ValueError(f"{column_name} does not exist in df.columns")
+
+    except ValueError as e:
+        print(e)
+        exit()
+
+    except Exception as e:
+        print(e)
+        return False
 
 
 def remove_links_and_specific_key(d, target_key="peopleAlsoViewed"):
@@ -216,7 +233,7 @@ def create_connection_request_message(profile):
             messages=[
                 {
                     "role": "system",
-                    "content": "you are an expert in crafting personalized connection request messages\nplease create a personalized connection request message using the given profile\nuse data from the sender to personalize the message\n keep the message short and engaging\n include relevant topics only",
+                    "content": "you are an expert in crafting personalized connection request messages\nplease create a personalized connection request message using the given profile\nuse data from the sender to personalize the message\n keep the message short and engaging\n include relevant topics only. Create short sentences\nMax 10 words per sentence",
                 },
                 {
                     "role": "user",
@@ -243,11 +260,11 @@ def update_csv_with_rid(csv_name, column_name="linkedinUrl"):
 
     linkedin_urls = get_urls(df, column_name)
 
-    linkedin_urls = linkedin_urls[:2]
+    linkedin_urls = linkedin_urls[2:5]
 
     for url in linkedin_urls:
 
-        if check_if_exists(df[df[column_name] == url].index, df, "rid"):
+        if check_if_exists(df[df[column_name] == url].index[0], df, "rid"):
             continue
         else:
 
@@ -258,19 +275,23 @@ def update_csv_with_rid(csv_name, column_name="linkedinUrl"):
     df.to_csv(csv_name, index=False)
 
 
-def update_csv_with_profile(csv_name, column_name="rid", create_message=True):
+def update_csv_with_profile(csv_name, column_name="rid"):
     df = pd.read_csv(csv_name)
 
     ids = get_ids(df, column_name)
 
     for id in ids:
+        index = df[df[column_name] == id].index[0]
+
+        if check_if_exists(index, df, "linkedinProfile"):
+            continue
+
         profile = get_profile_json(id)
 
         if profile is None:
             continue
 
         profile = json.loads(profile)
-        # print(type(profile))
 
         df = append_item_to_row(df, profile, id, column_name, "linkedinProfile")
 
@@ -278,29 +299,16 @@ def update_csv_with_profile(csv_name, column_name="rid", create_message=True):
 
         profile = json.dumps(profile)
 
-        # if (
-        #     check_if_exists(df[df[column_name] == id].index, df, "synthesizedProfile")
-        #     and create_message is False
-        # ):
-        #     continue
+        if check_if_exists(index, df, "synthesizedProfile"):
+            continue
 
-        # elif (
-        #     check_if_exists(df[df[column_name] == id].index, df, "synthesizedProfile")
-        #     and create_message is True
-        # ):
-        #     df = append_item_to_row(
-        #         df,
-        #         create_connection_request_message(profile),
-        #         id,
-        #         column_name,
-        #         "connectionRequestMessage",
-        #     )
-        #     continue
-
-        # else:
         df = append_item_to_row(
             df, synthesize_profile(profile), id, column_name, "synthesizedProfile"
         )
+
+        if check_if_exists(index, df, "connectionRequestMessage"):
+            continue
+
         df = append_item_to_row(
             df,
             create_connection_request_message(profile),
@@ -312,8 +320,25 @@ def update_csv_with_profile(csv_name, column_name="rid", create_message=True):
     df.to_csv(csv_name, index=False)
 
 
+def create_new_message(csv_name, index, column_name="synthesizedProfile"):
+    df = pd.read_csv(csv_name)
+
+    profile = df.at[index, column_name]
+
+    if profile is not None:
+        try:
+            message = create_connection_request_message(profile)
+            print(message)
+
+            df.at[index, "connectionRequestMessage"] = message
+
+            df.to_csv(csv_name, index=False)
+
+        except Exception as e:
+            print(e)
+
+
 if __name__ == "__main__":
     # update_csv_with_rid("freelanceSpain.csv")
-    update_csv_with_profile("freelanceSpain.csv")
-
-    # set_profile_rid("https://www.linkedin.com/in/jay-m-gonzalez/")
+    # update_csv_with_profile("freelanceSpain.csv")
+    create_new_message("freelanceSpain.csv", 4)
