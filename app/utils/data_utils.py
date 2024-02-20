@@ -35,7 +35,9 @@ def check_is_not_empty(index, df, column_name):
     try:
         if column_name in df.columns:
             cell_value = df.at[index, column_name]
-            return pd.notna(cell_value) and cell_value != "" and cell_value.isspace()
+            return (
+                pd.notna(cell_value) and cell_value != "" and not cell_value.isspace()
+            )
         else:
             raise ValueError(f"{column_name} does not exist in df.columns")
 

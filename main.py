@@ -45,13 +45,17 @@ def update_csv_with_rid(sheet_name, column_name="linkedinUrl"):
 
 
 def update_csv_with_profile(sheet_name, column_name="rid"):
+    logging.info("Loading Sheet")
     df = sheet_to_df(sheet_name)
 
     create_columns(
         df, ["linkedinProfile", "synthesizedProfile", "connectionRequestMessage"]
     )
 
+    logging.info("Getting IDs")
     ids = get_ids(df, column_name)
+
+    ids = ids[2:4]
 
     for id in ids:
         index = df[df[column_name] == id].index[0]
@@ -59,6 +63,7 @@ def update_csv_with_profile(sheet_name, column_name="rid"):
         if check_is_not_empty(index, df, "linkedinProfile"):
             continue
 
+        logging.info(f"Getting profile for {id}")
         profile = get_profile_json(id)
 
         if profile is None:
@@ -75,6 +80,7 @@ def update_csv_with_profile(sheet_name, column_name="rid"):
         if check_is_not_empty(index, df, "synthesizedProfile"):
             continue
 
+        logging.info(f"Synthesizing profile for {id}")
         df = append_item_to_row(
             df, synthesize_profile(profile), id, column_name, "synthesizedProfile"
         )
@@ -82,8 +88,8 @@ def update_csv_with_profile(sheet_name, column_name="rid"):
         if check_is_not_empty(index, df, "connectionRequestMessage"):
             continue
 
+        logging.info(f"Creating message for {id}")
         first_name = df.at[index, "firstName"]
-
         df = append_item_to_row(
             df,
             create_connection_request_message(profile, first_name),
@@ -92,6 +98,7 @@ def update_csv_with_profile(sheet_name, column_name="rid"):
             "connectionRequestMessage",
         )
 
+    logging.info("Saving Sheet")
     df_to_sheet(df, sheet_name)
 
 
@@ -116,6 +123,6 @@ def create_new_message(sheet_name, index, column_name="synthesizedProfile"):
 
 
 if __name__ == "__main__":
-    update_csv_with_rid("freelanceUK")
-    # update_csv_with_profile("freelanceUK")
+    # update_csv_with_rid("freelanceUK")
+    update_csv_with_profile("freelanceUK")
     # create_new_message("freelanceUK", 1)
