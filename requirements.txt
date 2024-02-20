@@ -4,3 +4,6 @@ pandas
 openai
 instructor
 pydantic
+gspread
+oauth2client
+gspread-dataframe

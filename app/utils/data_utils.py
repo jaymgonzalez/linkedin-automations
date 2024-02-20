@@ -31,10 +31,11 @@ def create_columns(df, columns):
     return df
 
 
-def check_if_exists(index, df, column_name):
+def check_is_not_empty(index, df, column_name):
     try:
         if column_name in df.columns:
-            return pd.notna(df.at[index, column_name])
+            cell_value = df.at[index, column_name]
+            return pd.notna(cell_value) and cell_value != "" and cell_value.isspace()
         else:
             raise ValueError(f"{column_name} does not exist in df.columns")
 

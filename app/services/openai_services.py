@@ -1,3 +1,4 @@
+import json
 import os
 import instructor
 import dotenv
@@ -34,7 +35,7 @@ def synthesize_profile(profile):
         return None
 
 
-def create_connection_request_message(profile):
+def create_connection_request_message(profile, first_name):
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -54,8 +55,13 @@ def create_connection_request_message(profile):
                 },
             ],
         )
-        print(response)
-        return response.model_dump_json(indent=2)
+
+        message = response.model_dump_json(indent=2)
+        message = json.loads(message)
+
+        final_message = f"Hi {first_name.split(0)} 👋\n{message['first_sentence']}\n{message['second_sentence']}\n{message['closer']}"
+
+        return final_message
 
     except Exception as e:
         print(e)

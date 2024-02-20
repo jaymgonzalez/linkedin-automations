@@ -27,17 +27,16 @@ class LinkedInProfile(BaseModel):
     education: List[str]
     experience: List[Experience]
     activities: List[Activity]
-    followers: int
+    followers: str
 
 
 class ConnectionRequestMessage(BaseModel):
-    """Represents a LinkedIn connection request. Tone should be approachable and friendly. The second sentence should be about what was praised on the first one"""
+    """Represents a LinkedIn connection request. Tone should be approachable and friendly. Use only one sentence for each field."""
 
-    intro: str = Field(description="Hey {first name} 👋")
     first_sentence: str = Field(
-        description="Love your {activity}.",
+        description="Love your {activity OR experience}.",
     )
     second_sentence: str = Field(
-        description="I'm also interested {activity}.",
+        description="I'm also interested {mention something they really like based on their profile}.",
     )
     closer: str = Field(description="Would love to connect!")
