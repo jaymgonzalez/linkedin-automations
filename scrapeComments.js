@@ -25,7 +25,46 @@ function downloadCSV(csv, filename) {
   downloadLink.click()
 }
 
+// Function to load more comments
+function loadMoreComments() {
+  var loadMoreCommentsButton = document.querySelector(
+    '.comments-comments-list__load-more-comments-button'
+  )
+  for (let i = 0; i < 5; i++) {
+    simulateMouseScrollToEnd()
+    loadMoreCommentsButton.click()
+    setTimeout(() => {
+      console.log('Loading more comments...')
+    }, 3000)
+  }
+}
+
+function easeOutQuad(t) {
+  return t * (2 - t)
+}
+
+function simulateMouseScrollToEnd(duration = 2000) {
+  let start = window.pageYOffset
+  let end = document.body.offsetHeight - window.innerHeight
+  let change = end - start
+  let currentTime = 0
+  const increment = 20
+
+  function animateScroll() {
+    currentTime += increment
+    let val = easeOutQuad(currentTime / duration)
+    window.scrollTo(0, start + change * val)
+    if (currentTime < duration) {
+      setTimeout(animateScroll, increment)
+    }
+  }
+
+  animateScroll()
+}
+
 function extractDataAndDownloadCSV() {
+  loadMoreComments()
+
   var usernames = document.querySelectorAll('.username') // Placeholder selector
   var userUrls = document.querySelectorAll('.userUrl') // Placeholder selector
   var comments = document.querySelectorAll('.comment') // Placeholder selector
