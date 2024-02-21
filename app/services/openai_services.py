@@ -15,6 +15,7 @@ def synthesize_profile(profile):
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
+            temperature=0.2,
             response_model=LinkedInProfile,
             messages=[
                 {
@@ -39,11 +40,12 @@ def create_connection_request_message(profile, first_name):
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
+            temperature=0.2,
             response_model=ConnectionRequestMessage,
             messages=[
                 {
                     "role": "system",
-                    "content": "you are an expert in crafting personalized connection request messages\nplease create a personalized connection request message using the given profile\nuse data from the sender to personalize the message if appropiate\nkeep the message short and engaging\ninclude relevant topics only\nCreate short sentences\nMax 15 words per sentence",
+                    "content": "you are an expert in crafting personalized connection request messages\nplease create a connection request message using the given profile\nkeep the message short and engaging\ninclude relevant topics only\nCreate short sentences\nMax 15 words per sentence\nuse sender information only if it is relevant\n",
                 },
                 {
                     "role": "user",
@@ -59,7 +61,7 @@ def create_connection_request_message(profile, first_name):
         message = response.model_dump_json(indent=2)
         message = json.loads(message)
 
-        final_message = f"Hi {first_name.split(0)} 👋\n{message['first_sentence']}\n{message['second_sentence']}\n{message['closer']}"
+        final_message = f"Hi {first_name.split()[0]} 👋\n{message['first_sentence']}\n{message['second_sentence']}\n{message['closer']}"
 
         return final_message
 

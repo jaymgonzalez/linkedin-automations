@@ -55,7 +55,7 @@ def update_csv_with_profile(sheet_name, column_name="rid"):
     logging.info("Getting IDs")
     ids = get_ids(df, column_name)
 
-    ids = ids[2:4]
+    ids = ids[3:5]
 
     for id in ids:
         index = df[df[column_name] == id].index[0]
@@ -102,27 +102,29 @@ def update_csv_with_profile(sheet_name, column_name="rid"):
     df_to_sheet(df, sheet_name)
 
 
-def create_new_message(sheet_name, index, column_name="synthesizedProfile"):
+def create_new_message(sheet_name, indexes, column_name="synthesizedProfile"):
     df = sheet_to_df(sheet_name)
 
-    profile = df.at[index, column_name]
+    for index in indexes:
 
-    first_name = df.at[index, "firstName"]
+        profile = df.at[index, column_name]
 
-    if profile is not None:
-        try:
-            message = create_connection_request_message(profile, first_name)
-            print(message)
+        first_name = df.at[index, "firstName"]
 
-            df.at[index, "connectionRequestMessage"] = message
+        if profile is not None:
+            try:
+                message = create_connection_request_message(profile, first_name)
+                print(message)
 
-            df_to_sheet(df, sheet_name)
+                df.at[index, "connectionRequestMessage"] = message
 
-        except Exception as e:
-            print(e)
+                df_to_sheet(df, sheet_name)
+
+            except Exception as e:
+                print(e)
 
 
 if __name__ == "__main__":
     # update_csv_with_rid("freelanceUK")
     update_csv_with_profile("freelanceUK")
-    # create_new_message("freelanceUK", 1)
+    # create_new_message("freelanceUK", [0, 1])
