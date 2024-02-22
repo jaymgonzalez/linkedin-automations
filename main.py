@@ -1,6 +1,6 @@
 import json
 import logging
-from app.services.scrapping_service import set_profile_rid, get_profile_json
+from app.services.scrapping_service import set_profile_rid, get_json_from_id
 from app.utils.data_utils import (
     create_columns,
     check_is_not_empty,
@@ -64,7 +64,7 @@ def update_csv_with_profile(sheet_name, column_name="rid"):
             continue
 
         logging.info(f"Getting profile for {id}")
-        profile = get_profile_json(id)
+        profile = get_json_from_id(id)
 
         if profile is None:
             continue

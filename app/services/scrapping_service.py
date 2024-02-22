@@ -38,7 +38,7 @@ def set_profile_rid(url):
         return None
 
 
-def get_profile_json(id):
+def get_json_from_id(id):
     params = (
         ("token", token),
         ("rid", id),
@@ -69,3 +69,43 @@ def get_profile_json(id):
             print(id, response.text)
 
             return None
+
+
+def set_feed_rid(id):
+    params = (
+        ("token", token),
+        ("format", "json"),
+        ("scraper", "linkedin-feed"),
+        ("callback", "true"),
+        ("url", f"https://www.linkedin.com/feed/update/urn:li:activity:{id}"),
+        ("format", "json"),
+        ("crawler", "LinkedInProfileCrawler"),
+    )
+
+    try:
+        response = requests.get("https://api.crawlbase.com", params=params)
+
+        id = response.json()["rid"]
+        return id
+
+    except json.decoder.JSONDecodeError:
+        print("There was an issue with the JSON object")
+        print(id, response.text)
+
+        return None
+
+    except Exception as e:
+        if response.json()["error"] == "Not Found":
+            print(f"The feed with id {id} was not found")
+            return None
+        else:
+            print(f"There was an issue with the request: {e}")
+            print(id, response.text)
+
+        return None
+
+
+# set_feed_rid("7165716189489418242")
+
+
+# feed = get_json_from_id("55495856922760e2ec3cf38b843c3f")
