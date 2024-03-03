@@ -1,0 +1,34 @@
+{
+  "pages": [
+    {
+      "template_uuid": "gxoysgq4tjkdh",
+      "layers": {
+        "title": {
+          "text": "{{ $json['title'] }}"
+        }
+      }
+    },
+    {
+      "template_uuid": "v9wiu2nkgv2ao",
+      "layers": {
+        "number": {
+          "text": "{{ $json['modifiedSlides'][0]['number'] }}"
+        },
+        "title": {
+          "text": "{{ $json['modifiedSlides'][0]['title'] }}"
+        },
+        "subtitle": {
+          "text": "{{ $json['modifiedSlides'][0]['subtitle'][0] }}"
+        }
+      }
+    },
+    {
+      "template_uuid": "gpzptpw6kmwgm",
+      "layers": {
+        "name": {
+          "title": "{{ $json['takeaway'] }}"
+        }
+      }
+    }
+  ]
+}
