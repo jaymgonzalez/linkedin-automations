@@ -43,8 +43,8 @@ const main = function () {
       {
         template_uuid: 'gpzptpw6kmwgm',
         layers: {
-          name: {
-            title: takeaway,
+          title: {
+            text: takeaway,
           },
         },
       },
