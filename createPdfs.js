@@ -7,7 +7,8 @@ const main = function () {
 
   const arr = $json.content.split('\n\n')
 
-  const title = arr[0]
+  const title = arr[0].split('\n')[0]
+  const subtitle = arr[0].split('\n')[1]
   const takeaway = arr[arr.length - 1].replace(/\n$/, '')
   const slides = arr.slice(1, -1)
 
@@ -36,6 +37,9 @@ const main = function () {
         layers: {
           title: {
             text: title,
+          },
+          subtitle: {
+            text: subtitle,
           },
         },
       },
