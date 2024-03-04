@@ -1,4 +1,6 @@
-const arr = $json.content.split('\n\n')
+const content = $json.content.split('==SLIDES==\n')
+
+const arr = content[1].split('\n\n')
 
 const title = arr[0].split('\n')[0]
 const subtitle = arr[0].split('\n')[1]
