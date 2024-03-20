@@ -22,7 +22,7 @@
     return elements[elements.length - 1].innerText.match(/(\d+)/g)
   }
 
-  // const totalNumberOfItems = 7
+  // const totalNumberOfItems = 200
   const totalNumberOfItems = totalPosts()
 
   console.log('Total number of posts: ', totalNumberOfItems)
